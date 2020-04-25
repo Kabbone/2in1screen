@@ -14,7 +14,7 @@ char command[DATA_SIZE*4];
 
 char *ROT[]   = {"0", 			    "180",       		"270", 				"90"};
 char *COOR[]  = {"1 0 0 0 1 0", 	" -1 0 1 0 -1 1", 	"0 -1 1 1 0 0", 	"0 1 0 -1 0 1"};
-// char *TOUCH[] = {"enable", 				"disable", 				"disable", 				"disable"};
+char *TOUCH[] = {"enabled", 		"disabled", 		"disabled", 		"disabled"};
 
 double accel_x = 0.0,
 #if N_STATE == 4
@@ -28,7 +28,7 @@ int rotation_changed(){
 	int state = 0;
 
 	if(accel_x < -accel_g) state = 0;
-	else if(accel_x > accel_g) state = 1;
+	else if(accel_x > accel_g-2) state = 1;
 #if N_STATE == 4
 	else if(accel_y > accel_g) state = 2;
 	else if(accel_y < -accel_g) state = 3;
@@ -60,6 +60,8 @@ void rotate_screen(){
 	system(command);
 	sprintf(command, "swaymsg input \"%s\" calibration_matrix \"%s\"", "1046:9111:Goodix_Capacitive_TouchScreen", COOR[current_state]);
 	system(command);
+    sprintf(command, "swaymsg input \"%s\" events %s", "2321:21128:HTIX5288:00_0911:5288_Touchpad", TOUCH[current_state]);
+    system(command);
 }
 
 int main(int argc, char const *argv[]) {

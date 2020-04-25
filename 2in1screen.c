@@ -12,8 +12,8 @@ char *basedir_end = NULL;
 char content[DATA_SIZE];
 char command[DATA_SIZE*4];
 
-char *ROT[]   = {"0", 				    "180",       			"270",    				"90"};
-char *COOR[]  = {"1 0 0 0 1 0 0 0 1",	"-1 0 1 0 -1 1 0 0 1", 	"0 -1 1 1 0 0 0 0 1", 	"0 1 0 -1 0 1 0 0 1"};
+char *ROT[]   = {"0", 			    "180",       		"270", 				"90"};
+char *COOR[]  = {"1 0 0 0 1 0", 	" -1 0 1 0 -1 1", 	"0 -1 1 1 0 0", 	"0 1 0 -1 0 1"};
 // char *TOUCH[] = {"enable", 				"disable", 				"disable", 				"disable"};
 
 double accel_x = 0.0,
@@ -56,10 +56,10 @@ FILE* bdopen(char const *fname, char leave_open){
 }
 
 void rotate_screen(){
-	sprintf(command, "swaymsg output eDP-1 transform %s", ROT[current_state]);
+	sprintf(command, "swaymsg output %s transform %s", "eDP-1", ROT[current_state]);
 	system(command);
-//	sprintf(command, "xinput set-prop \"%s\" \"Coordinate Transformation Matrix\" %s", "Wacom HID 4846 Finger", COOR[current_state]);
-//	system(command);
+	sprintf(command, "swaymsg input \"%s\" calibration_matrix \"%s\"", "1046:9111:Goodix_Capacitive_TouchScreen", COOR[current_state]);
+	system(command);
 }
 
 int main(int argc, char const *argv[]) {

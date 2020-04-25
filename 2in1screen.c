@@ -6,19 +6,19 @@
 #include <string.h>
 
 #define DATA_SIZE 256
-#define N_STATE 2
+#define N_STATE 4
 char basedir[DATA_SIZE];
 char *basedir_end = NULL;
 char content[DATA_SIZE];
 char command[DATA_SIZE*4];
 
-char *ROT[]   = {"normal", 				"inverted", 			"left", 				"right"};
+char *ROT[]   = {"0", 				    "180",       			"270",    				"90"};
 char *COOR[]  = {"1 0 0 0 1 0 0 0 1",	"-1 0 1 0 -1 1 0 0 1", 	"0 -1 1 1 0 0 0 0 1", 	"0 1 0 -1 0 1 0 0 1"};
 // char *TOUCH[] = {"enable", 				"disable", 				"disable", 				"disable"};
 
-double accel_y = 0.0,
+double accel_x = 0.0,
 #if N_STATE == 4
-	   accel_x = 0.0,
+	   accel_y = 0.0,
 #endif
 	   accel_g = 7.0;
 
@@ -27,11 +27,11 @@ int current_state = 0;
 int rotation_changed(){
 	int state = 0;
 
-	if(accel_y < -accel_g) state = 0;
-	else if(accel_y > accel_g) state = 1;
+	if(accel_x < -accel_g) state = 0;
+	else if(accel_x > accel_g) state = 1;
 #if N_STATE == 4
-	else if(accel_x > accel_g) state = 2;
-	else if(accel_x < -accel_g) state = 3;
+	else if(accel_y > accel_g) state = 2;
+	else if(accel_y < -accel_g) state = 3;
 #endif
 
 	if(current_state!=state){
@@ -56,10 +56,10 @@ FILE* bdopen(char const *fname, char leave_open){
 }
 
 void rotate_screen(){
-	sprintf(command, "xrandr -o %s", ROT[current_state]);
+	sprintf(command, "swaymsg output eDP-1 transform %s", ROT[current_state]);
 	system(command);
-	sprintf(command, "xinput set-prop \"%s\" \"Coordinate Transformation Matrix\" %s", "Wacom HID 4846 Finger", COOR[current_state]);
-	system(command);
+//	sprintf(command, "xinput set-prop \"%s\" \"Coordinate Transformation Matrix\" %s", "Wacom HID 4846 Finger", COOR[current_state]);
+//	system(command);
 }
 
 int main(int argc, char const *argv[]) {
@@ -83,19 +83,19 @@ int main(int argc, char const *argv[]) {
 	bdopen("in_accel_scale", 0);
 	double scale = atof(content);
 
-	FILE *dev_accel_y = bdopen("in_accel_y_raw", 1);
-#if N_STATE == 4
 	FILE *dev_accel_x = bdopen("in_accel_x_raw", 1);
+#if N_STATE == 4
+	FILE *dev_accel_y = bdopen("in_accel_y_raw", 1);
 #endif
 
 	while(1){
-		fseek(dev_accel_y, 0, SEEK_SET);
-		fgets(content, DATA_SIZE, dev_accel_y);
-		accel_y = atof(content) * scale;
-#if N_STATE == 4
 		fseek(dev_accel_x, 0, SEEK_SET);
 		fgets(content, DATA_SIZE, dev_accel_x);
 		accel_x = atof(content) * scale;
+#if N_STATE == 4
+		fseek(dev_accel_y, 0, SEEK_SET);
+		fgets(content, DATA_SIZE, dev_accel_y);
+		accel_y = atof(content) * scale;
 #endif
 		if(rotation_changed())
 			rotate_screen();

@@ -62,6 +62,8 @@ void rotate_screen(){
 	system(command);
     sprintf(command, "swaymsg input \"%s\" events %s", "2321:21128:HTIX5288:00_0911:5288_Touchpad", TOUCH[current_state]);
     system(command);
+    sprintf(command, "swaymsg input \"%s\" events %s", "1:1:AT_Translated_Set_2_keyboard", TOUCH[current_state]);
+    system(command);
 }
 
 int main(int argc, char const *argv[]) {
